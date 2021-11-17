@@ -1,7 +1,7 @@
 package com.github.music.of.the.ainur.quenya.compiler
 
 import org.apache.spark.sql.types._
-
+import org.apache.spark.sql.types.AbstractDataType
 import scala.util.parsing.combinator._
 
 /*
@@ -37,11 +37,15 @@ object ParserQuenyaDsl extends JavaTokenParsers {
   def expression: Parser[Statement] = precedence ~ col ~ operator ^^ {
     case prec ~ cl ~ op =>
       op match {
-        case al ~ ":" ~ dt => Statement(prec,cl,DOLLAR,al.toString(),Some(dt.asInstanceOf[DataType]))
+        case al ~ Some(semicolumn) ~ dt => Statement(prec,cl,DOLLAR,al.toString(),dt.asInstanceOf[Option[DataType]])
+        // neet to decompose "alias" otherwise it will like "foo~None" as alias.
+        case al ~ None => al match {
+          case a ~ None => Statement(prec,cl,DOLLAR,a.toString(),None)
+        }
         case al:String => Statement(prec,cl,AT,al)
       }
   }
-  def precedence: Parser[Int] = """[\t\s]*""".r ^^ (prec => prec.replaceAll(" ","""\t""").count(_ == '\t'))
+  def precedence: Parser[Int] = """[\t\s]*""".r ^^ (prec => prec.replaceAll(" ","\t").count(_ == '\t'))
   def col: Parser[StateSelect] = """[0-9A-Za-z._]+""".r ~ opt(element) ^^ {
     case a ~ Some(b) => StateSelect(a,b)
     case a ~ None => StateSelect(a,None)
@@ -49,17 +53,18 @@ object ParserQuenyaDsl extends JavaTokenParsers {
   def element: Parser[Option[String]] = "[" ~> opt("""\d+""".r) <~ "]"
   def operator: Parser[Any] = at | dollar
   def at: Parser[String] = "@" ~> alias
-  def dollar : Parser[Any] = "$" ~> alias ~ ":" ~ datatype
+  def dollar : Parser[Any] = "$" ~> alias ~ opt(":") ~ datatype
   def alias : Parser[String] = "[0-9a-zA-Z_]+".r
-  def datatype : Parser[DataType] = ("BinaryType" ^^ (dt => BinaryType)
-    | "FloatType" ^^ (dt => FloatType)
-    | "ByteType" ^^ (dt => ByteType)
-    | "IntegerType" ^^ (dt => IntegerType)
-    | "LongType" ^^ (dt => LongType)
-    | "BooleanType" ^^ (dt => BooleanType)
-    | "StringType" ^^ (dt => StringType)
-    | "TimestampType" ^^ (dt => TimestampType)
-    | "DecimalType" ^^ (dt => DecimalType(0,10))
-    | "DoubleType" ^^ (dt => DoubleType)
-    | "ShortType" ^^ (dt => ShortType))
+  def datatype : Parser[Option[DataType]] = ("BinaryType" ^^ (dt => Some(BinaryType))
+    | "FloatType" ^^ (dt => Some(FloatType))
+    | "ByteType" ^^ (dt => Some(ByteType))
+    | "IntegerType" ^^ (dt => Some(IntegerType))
+    | "LongType" ^^ (dt => Some(LongType))
+    | "BooleanType" ^^ (dt => Some(BooleanType))
+    | "StringType" ^^ (dt => Some(StringType))
+    | "TimestampType" ^^ (dt => Some(TimestampType))
+    | "DecimalType" ^^ (dt => Some(DecimalType(0,10)))
+    | "DoubleType" ^^ (dt => Some(DoubleType))
+    | "ShortType" ^^ (dt => Some(ShortType))
+    | "" ^^ (dt => None))
 }

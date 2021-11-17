@@ -5,7 +5,13 @@
 Adding Quenya DSL dependency to your sbt build:
 
 ```
-libraryDependencies += "com.github.music-of-the-ainur" %% "quenya-dsl" % "1.0.2-2.4"
+libraryDependencies += "com.github.music-of-the-ainur" %% "quenya-dsl" % "1.1.4-$SPARK_VERSION"
+```
+
+To run in spark-shell:
+
+```
+spark-shell --packages "com.github.music-of-the-ainur:quenya-dsl_2.11:1.1.4-$SPARK_VERSION"
 ```
 
 ## Introduction
@@ -56,7 +62,7 @@ JSON
    },
    "race":"Maiar",
    "age":"immortal",
-   "weapon":[ 
+   "weapons":[ 
       "Glamdring",
       "Narya",
       "Wizard Staff"
@@ -80,7 +86,7 @@ Example:
 
 DSL
 ```
-weapon@weapon
+weapons@weapon
     weapon$weapon:StringType
 ```
 
@@ -97,7 +103,7 @@ JSON
    },
    "race":"Maiar",
    "age":"immortal",
-   "weapon":[ 
+   "weapons":[ 
       "Glamdring",
       "Narya",
       "Wizard Staff"
@@ -202,7 +208,7 @@ You can _alias_ using the fully qualified name using ```printDsl(df,true)```, yo
 | Apache Spark | 2.4       |
 
 ## Author
-Daniel Mantovani [daniel.mantovani@modakanalytics.com](mailto:daniel.mantovani@modakanalytics.com)
+Daniel Mantovani [daniel.mantovani@modak.com](mailto:daniel.mantovani@modak.com)
 
 ## Sponsor
-[![Modak Analytics](/docs/img/modak_analytics.png)](http://www.modakanalytics.com)
+[![Modak Analytics](/docs/img/modak_analytics.png)](http://www.modak.com)
